@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    input{
+  width: 300px;
+}
+*{
+  font-family: Courier New, Courier, monospace;
+}
+html, body{
+}
+nav{
+  background-color: turquoise;
+  color: white;
+  padding: 5px;
+}
+main{
+  padding: 5px;
+}
+input{
+  width: 100%;
+  margin: 5px;
+}
+button, textarea{
+  margin: 5px;
+  display: block;
+  width: 100%;
+}
+textarea{
+  text-align: center;
+  height: 150px;
+  background-color: white;
+}
+.noShow{
+  display: none;
+  width: 0px !important;
+  height: 0px !important;
+}
+input[type=number]{
+  width: 50px;
+  border: solid black;
+  border-radius: 10px;
+  padding: 5px;
+}
+  </style>
+  <title>SigBot :: SearchThread</title>
+</head>
+<body>
+<nav>
+Sigton Bot >> Search Tool
+</nav>
+<main>
+  THE LAST PAGE IN THE THREAD: <input id="pg" type="number" value="786" />
+<input id="what" type="text" class="long" placeholder="Content of post">
+<input id="who" type="text" class="short" placeholder="The person who posted">
+<button onclick="startSearch();">Start searching now.</button>
+<textarea disabled></textarea>
+</main>
+  <div class="noShow">This should not show</div>
+  NOTE: If you are searching for quotes, make sure you use the smart-quote form, beause they appear in the actual displayed version of the post!
+<script>
+function scanPage(pg){
+  var inet = new XMLHttpRequest();
+  inet.open("GET", "https://crossorigin.me/https://scratch.mit.edu/discuss/topic/158252/?page="+pg);
+  inet.onreadystatechange = function(){
+    if(inet.readyState == 4){
+      var who = document.getElementById("who").value;
+      var what = document.getElementById("what").value;
+      if(inet.status == 200){
+      var data = inet.responseText;
+        var j = document.querySelectorAll(".noShow")[0];
+        j.innerHTML = data.replace(new RegExp("<link.+?>", "g"), "");
+      textLog("Page " + pg + " loaded.");
+        var k = j.getElementsByClassName("blockpost roweven firstpost");
+        for(var i = 0; i < k.length; i++){
+          if(k[i].getElementsByClassName("post_body_html")[0].innerHTML.indexOf(what) != -1 && k[i].getElementsByClassName("black username")[0].innerHTML.indexOf(who) != -1){
+            textLog("MATCH FOUND");
+          }
+        }
+        setTimeout(function(){scanPage(pg-1);}, 1000);
+      } else {
+        textLog("ERROR: failed to load page " + pg);
+        textLog("Trying again in 3 secs");
+        setTimeout(function(){scanPage(pg);}, 3000);
+      }
+    }
+  };
+  inet.send();
+}
+function textLog(text){
+  document.querySelectorAll("textarea")[0].innerHTML +=
+    text + "\n";
+}
+function startSearch(){
+  scanPage(document.getElementById("pg").value);
+}
+</script>
+</body>
+</html>
